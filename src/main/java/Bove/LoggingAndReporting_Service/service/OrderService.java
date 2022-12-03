@@ -4,7 +4,6 @@ import Bove.LoggingAndReporting_Service.dao.OrderRepo;
 import Bove.LoggingAndReporting_Service.dto.order.IdAndExchange;
 import Bove.LoggingAndReporting_Service.dto.order.Order;
 import Bove.LoggingAndReporting_Service.dto.order.OrderStatusResponse;
-import jakarta.persistence.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
