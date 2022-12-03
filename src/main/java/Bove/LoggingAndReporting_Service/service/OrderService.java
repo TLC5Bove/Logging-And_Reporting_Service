@@ -1,14 +1,17 @@
 package Bove.LoggingAndReporting_Service.service;
 
 import Bove.LoggingAndReporting_Service.dao.OrderRepo;
+import Bove.LoggingAndReporting_Service.dto.order.IdAndExchange;
 import Bove.LoggingAndReporting_Service.dto.order.Order;
 import Bove.LoggingAndReporting_Service.dto.order.OrderStatusResponse;
+import jakarta.persistence.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class OrderService {
@@ -18,16 +21,21 @@ public class OrderService {
     @Value("${order.API_KEY}")
     private String exchangeAPIkey;
 
+    @Value("${order.API_KEY2}")
+    private String exchange2APIkey;
+
     @Value("${order.EXCHANGE_URL}")
     private String exchangeURL;
     @Value("${order.EXCHANGE2_URL}")
     private String exchange2URL;
 
-    public OrderStatusResponse getOrderStatus(String orderId) {
-        WebClient webClient = WebClient.create(exchangeURL);
+    public List<IdAndExchange> results = orderRepo.findIDsOfAllPendingOrders();
+
+    public OrderStatusResponse getOrderStatus(String orderId, String exchange) {
+        WebClient webClient = WebClient.create("https://" + exchange + "matraining.com");
 
         OrderStatusResponse response = webClient.get()
-                .uri("/" + exchangeAPIkey + "/order/" + orderId)
+                .uri("/" + getApiKey(exchange) + "/order/" + orderId)
                 .retrieve()
                 .bodyToMono(OrderStatusResponse.class)
                 .block();
@@ -60,6 +68,11 @@ public class OrderService {
             orderRepo.save(order);
             return "This order with ID " + response.getOrderID() + " has been fully executed";
         }
+    }
 
+    private String getApiKey(String exchange) {
+        if (exchange.equals("exchange"))
+            return exchangeAPIkey;
+        else return exchange2APIkey;
     }
 }
