@@ -25,17 +25,17 @@ public class OrderStatusController {
         return orderService.getOrderStatus(orderId, exchange);
     }
 
-    @Scheduled(fixedDelay = 1000)
-    public void checkOrderStatus() {
-        List<IdAndExchange> results = orderRepo.findIDsOfAllPendingOrders();
-        if (results.size() < 50) {
-            results.stream().forEach(res -> {
-                orderService.getOrderStatus(res.getId(), res.getExchange());
-            });
-        } else {
-            results.parallelStream().forEach(res -> {
-                orderService.getOrderStatus(res.getId(), res.getExchange());
-            });
-        }
-    }
+//    @Scheduled(fixedDelay = 1000)
+//    public void checkOrderStatus() {
+//        List<IdAndExchange> results = orderService.results();
+//        if (results.size() < 50) {
+//            results.stream().forEach(res -> {
+//                orderService.getOrderStatus(res.getId(), res.getExchange());
+//            });
+//        } else {
+//            results.parallelStream().forEach(res -> {
+//                orderService.getOrderStatus(res.getId(), res.getExchange());
+//            });
+//        }
+//    }
 }

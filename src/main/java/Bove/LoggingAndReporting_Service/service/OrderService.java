@@ -21,21 +21,20 @@ public class OrderService {
     @Value("${order.API_KEY}")
     private String exchangeAPIkey;
 
-    @Value("${order.API_KEY2}")
-    private String exchange2APIkey;
-
     @Value("${order.EXCHANGE_URL}")
     private String exchangeURL;
     @Value("${order.EXCHANGE2_URL}")
     private String exchange2URL;
 
-    public List<IdAndExchange> results = orderRepo.findIDsOfAllPendingOrders();
+    public List<IdAndExchange> results() {
+        return orderRepo.findIDsOfAllPendingOrders();
+    }
 
     public OrderStatusResponse getOrderStatus(String orderId, String exchange) {
         WebClient webClient = WebClient.create("https://" + exchange + "matraining.com");
 
         OrderStatusResponse response = webClient.get()
-                .uri("/" + getApiKey(exchange) + "/order/" + orderId)
+                .uri("/" + exchange + "/order/" + orderId)
                 .retrieve()
                 .bodyToMono(OrderStatusResponse.class)
                 .block();
@@ -46,7 +45,7 @@ public class OrderService {
         return response;
     }
 
-    public String checkOrderExecutionStatus(OrderStatusResponse response, String orderId) {
+    private String checkOrderExecutionStatus(OrderStatusResponse response, String orderId) {
 
         Order order = orderRepo.findById(orderId).get();
         if (order.getStatus() == "complete") return "";
@@ -68,11 +67,5 @@ public class OrderService {
             orderRepo.save(order);
             return "This order with ID " + response.getOrderID() + " has been fully executed";
         }
-    }
-
-    private String getApiKey(String exchange) {
-        if (exchange.equals("exchange"))
-            return exchangeAPIkey;
-        else return exchange2APIkey;
     }
 }
