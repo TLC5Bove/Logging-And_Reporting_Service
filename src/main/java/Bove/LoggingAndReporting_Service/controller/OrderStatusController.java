@@ -29,7 +29,7 @@ public class OrderStatusController {
     public void checkOrderStatus() {
         List<IdAndExchange> results = orderService.results();
         if (results.size() < 50) {
-            results.stream().forEach(res -> {
+            results.forEach(res -> {
                 orderService.getOrderStatus(res.getId(), res.getExchange());
             });
         } else {
