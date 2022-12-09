@@ -1,7 +1,7 @@
 package Bove.LoggingAndReporting_Service.controller;
 
 import Bove.LoggingAndReporting_Service.dao.OrderRepo;
-import Bove.LoggingAndReporting_Service.dto.order.IdAndExchange;
+import Bove.LoggingAndReporting_Service.dto.order.message.IdAndExchange;
 import Bove.LoggingAndReporting_Service.dto.order.OrderStatusResponse;
 import Bove.LoggingAndReporting_Service.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,27 +15,10 @@ import java.util.List;
 @RestController
 public class OrderStatusController {
     @Autowired
-    OrderRepo orderRepo;
-
-    @Autowired
     OrderService orderService;
 
     @GetMapping("api/v1/order/{orderId}/{exchange}")
     public OrderStatusResponse getOrderStatus(OrderStatusResponse orderStatusResponse, @PathVariable("orderId") String orderId, @PathVariable("exchange") String exchange) {
         return orderService.getOrderStatus(orderId, exchange);
-    }
-
-    @Scheduled(fixedDelay = 1000)
-    public void checkOrderStatus() {
-        List<IdAndExchange> results = orderService.results();
-        if (results.size() < 50) {
-            results.forEach(res -> {
-                orderService.getOrderStatus(res.getId(), res.getExchange());
-            });
-        } else {
-            results.parallelStream().forEach(res -> {
-                orderService.getOrderStatus(res.getId(), res.getExchange());
-            });
-        }
     }
 }

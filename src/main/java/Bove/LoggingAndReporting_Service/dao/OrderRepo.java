@@ -1,6 +1,6 @@
 package Bove.LoggingAndReporting_Service.dao;
 
-import Bove.LoggingAndReporting_Service.dto.order.IdAndExchange;
+import Bove.LoggingAndReporting_Service.dto.order.message.IdAndExchange;
 import Bove.LoggingAndReporting_Service.dto.order.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

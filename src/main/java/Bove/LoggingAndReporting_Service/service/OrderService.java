@@ -1,8 +1,7 @@
 package Bove.LoggingAndReporting_Service.service;
 
 import Bove.LoggingAndReporting_Service.dao.OrderRepo;
-import Bove.LoggingAndReporting_Service.dto.order.Execution;
-import Bove.LoggingAndReporting_Service.dto.order.IdAndExchange;
+import Bove.LoggingAndReporting_Service.dto.order.message.IdAndExchange;
 import Bove.LoggingAndReporting_Service.dto.order.Order;
 import Bove.LoggingAndReporting_Service.dto.order.OrderStatusResponse;
 import org.springframework.beans.factory.annotation.Autowired;
