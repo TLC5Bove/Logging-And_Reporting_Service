@@ -11,11 +11,16 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class OrderService {
     @Autowired
     OrderRepo orderRepo;
+
+    @Autowired
+    ExecutionService executionService;
 
     @Value("${order.API_KEY}")
     private String exchangeAPIkey;
@@ -29,42 +34,53 @@ public class OrderService {
         return orderRepo.findIDsOfAllPendingOrders();
     }
 
+    public Order findById(String orderId) {
+        return orderRepo.findById(orderId).orElse(null);
+    }
+
+    public void saveOrder(Order order) {
+        orderRepo.save(order);
+    }
+
     public OrderStatusResponse getOrderStatus(String orderId, String exchange) {
-        WebClient webClient = WebClient.create("https://" + exchange + "matraining.com");
+        WebClient webClient = WebClient.create("https://exchange2.matraining.com");
 
         OrderStatusResponse response = webClient.get()
-                .uri("/" + exchange + "/order/" + orderId)
+                .uri("/" + exchangeAPIkey + "/order/" + orderId)
                 .retrieve()
                 .bodyToMono(OrderStatusResponse.class)
                 .block();
 
         assert response != null;
         checkOrderExecutionStatus(response, orderId);
-
         return response;
     }
 
-    private String checkOrderExecutionStatus(OrderStatusResponse response, String orderId) {
+    private void checkOrderExecutionStatus(OrderStatusResponse response, String orderId) {
+        Order order = findById(orderId);
 
-        Order order = orderRepo.findById(orderId).get();
-        if (order.getStatus() == "complete") return "";
+        if (order == null) return;
 
-        Integer unexecutedQuantity = response.getQuantity() - response.getCumulatitiveQuantity();
-        if (response.getExecutions() == null) {
-            order.setStatus("pending");
-            order.setDateUpdated(new Date());
-            orderRepo.save(order);
-            return "This order with ID " + response.getOrderID() + " has not been executed";
-        } else if (response.getQuantity() >= 1 && response.getQuantity() > response.getCumulatitiveQuantity()) {
+        if (response.getExecutions() == order.getExecutions()) return;
+
+        if (Objects.equals(order.getStatus(), "complete")) return;
+
+        if (response.getExecutions() == null) return;
+
+        if (response.getQuantity() >= 1 && response.getQuantity() > response.getCumulatitiveQuantity()) {
             order.setStatus("partial");
-            order.setDateUpdated(new Date());
-            orderRepo.save(order);
-            return "This order with ID " + response.getOrderID() + " has been partially executed \n " + "" + unexecutedQuantity + "to " + response.getSide();
         } else {
             order.setStatus("complete");
-            order.setDateUpdated(new Date());
-            orderRepo.save(order);
-            return "This order with ID " + response.getOrderID() + " has been fully executed";
         }
+
+        for (Execution execution : response.getExecutions()) {
+            if (order.getExecutions().contains(execution)) continue;
+            execution.setOrder(order);
+            executionService.save(execution);
+        }
+        order.setCumulatitivePrice(response.getCumulatitivePrice());
+        order.setCumulatitiveQuantity(response.getCumulatitiveQuantity());
+        order.setDateUpdated(new Date());
+        orderRepo.save(order);
     }
 }
