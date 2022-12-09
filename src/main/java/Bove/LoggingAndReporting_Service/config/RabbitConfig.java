@@ -10,25 +10,46 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
-    public static final String QUEUE = "message_queue";
-    public static final String EXCHANGE = "message_exchange";
+    public static final String TRACKING_QUEUE = "tracking_queue";
+    public static final String COMPLETION_QUEUE = "completion_queue";
+    public static final String TRACKING_EXCHANGE = "tracking_exchange";
+    public static final String COMPLETION_EXCHANGE = "completion_exchange";
     public static final String ROUTING_KEY = "message_routingKey";
 
+
     @Bean
-    public Queue queue() {
-        return  new Queue(QUEUE);
+    public Queue tracking_queue() {
+        return  new Queue(TRACKING_QUEUE);
     }
 
     @Bean
-    public DirectExchange exchange() {
-        return new DirectExchange(EXCHANGE);
+    public Queue completion_queue() {
+        return  new Queue(COMPLETION_QUEUE);
     }
 
     @Bean
-    public Binding binding(Queue queue, DirectExchange exchange) {
+    public DirectExchange tracking_exchange() {
+        return new DirectExchange(TRACKING_EXCHANGE);
+    }
+
+    @Bean
+    public DirectExchange completion_exchange() {
+        return new DirectExchange(COMPLETION_EXCHANGE);
+    }
+
+    @Bean
+    public Binding tracking_binding() {
         return BindingBuilder
-                .bind(queue)
-                .to(exchange)
+                .bind(tracking_queue())
+                .to(tracking_exchange())
+                .with(ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding completion_binding() {
+        return BindingBuilder
+                .bind(completion_queue())
+                .to(completion_exchange())
                 .with(ROUTING_KEY);
     }
 
