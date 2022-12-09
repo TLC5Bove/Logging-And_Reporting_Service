@@ -1,4 +1,4 @@
-package Bove.LoggingAndReporting_Service.dto.order;
+package Bove.LoggingAndReporting_Service.dto.order.message;
 
 import lombok.Data;
 
