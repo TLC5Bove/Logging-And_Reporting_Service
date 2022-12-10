@@ -1,9 +1,9 @@
 package Bove.LoggingAndReporting_Service.dto.order;
 
 import lombok.Data;
+import lombok.NonNull;
 
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
 
 @Data
 public class OrderStatusResponse {
@@ -11,12 +11,10 @@ public class OrderStatusResponse {
     private Integer quantity;
     private Double price;
     private String side;
-    private ArrayList<Execution> executions = new ArrayList<>();
+    private List<Execution> executions;
     private String orderID;
     private String orderType;
     private Integer cumulatitiveQuantity;
     private Double cumulatitivePrice;
-
-
 }
 

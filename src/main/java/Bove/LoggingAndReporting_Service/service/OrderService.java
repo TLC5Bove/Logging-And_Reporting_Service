@@ -1,9 +1,12 @@
 package Bove.LoggingAndReporting_Service.service;
 
 import Bove.LoggingAndReporting_Service.dao.OrderRepo;
+import Bove.LoggingAndReporting_Service.dto.order.Execution;
 import Bove.LoggingAndReporting_Service.dto.order.message.IdAndExchange;
 import Bove.LoggingAndReporting_Service.dto.order.Order;
 import Bove.LoggingAndReporting_Service.dto.order.OrderStatusResponse;
+import Bove.LoggingAndReporting_Service.dto.order.message.MessageRepo;
+import Bove.LoggingAndReporting_Service.mqPubSub.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,12 @@ public class OrderService {
 
     @Autowired
     ExecutionService executionService;
+
+    @Autowired
+    MessageRepo messageRepo;
+
+    @Autowired
+    Producer producer;
 
     @Value("${order.API_KEY}")
     private String exchangeAPIkey;
@@ -43,7 +52,7 @@ public class OrderService {
     }
 
     public OrderStatusResponse getOrderStatus(String orderId, String exchange) {
-        WebClient webClient = WebClient.create("https://exchange2.matraining.com");
+        WebClient webClient = WebClient.create("https://exchange.matraining.com");
 
         OrderStatusResponse response = webClient.get()
                 .uri("/" + exchangeAPIkey + "/order/" + orderId)
@@ -57,30 +66,26 @@ public class OrderService {
     }
 
     private void checkOrderExecutionStatus(OrderStatusResponse response, String orderId) {
-        Order order = findById(orderId);
+//        Order order = findById(orderId);
+//
+//        if (order == null) return;
+//
+//        if (response.getExecutions() == order.getExecutions()) return;
+//
+//        if (Objects.equals(order.getStatus(), "complete")) {
+//            messageRepo.deleteById(orderId);
+//            return;
+//        }
 
-        if (order == null) return;
-
-        if (response.getExecutions() == order.getExecutions()) return;
-
-        if (Objects.equals(order.getStatus(), "complete")) return;
-
-        if (response.getExecutions() == null) return;
+        if (response.getExecutions().isEmpty()) return;
 
         if (response.getQuantity() >= 1 && response.getQuantity() > response.getCumulatitiveQuantity()) {
-            order.setStatus("partial");
+//            order.setStatus("partial");
+            return;
         } else {
-            order.setStatus("complete");
+            messageRepo.deleteById(orderId);
         }
-
-        for (Execution execution : response.getExecutions()) {
-            if (order.getExecutions().contains(execution)) continue;
-            execution.setOrder(order);
-            executionService.save(execution);
-        }
-        order.setCumulatitivePrice(response.getCumulatitivePrice());
-        order.setCumulatitiveQuantity(response.getCumulatitiveQuantity());
-        order.setDateUpdated(new Date());
-        orderRepo.save(order);
+        System.out.println(response.getOrderID());
+        producer.publishCompletedOrdersMessage(response);
     }
 }
