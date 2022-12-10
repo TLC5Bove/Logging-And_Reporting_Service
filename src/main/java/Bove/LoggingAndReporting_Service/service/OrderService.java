@@ -77,7 +77,7 @@ public class OrderService {
 //            return;
 //        }
 
-        if (response.getExecutions() == null) return;
+        if (response.getExecutions().isEmpty()) return;
 
         if (response.getQuantity() >= 1 && response.getQuantity() > response.getCumulatitiveQuantity()) {
 //            order.setStatus("partial");
@@ -85,7 +85,7 @@ public class OrderService {
         } else {
             messageRepo.deleteById(orderId);
         }
-
+        System.out.println(response.getOrderID());
         producer.publishCompletedOrdersMessage(response);
     }
 }
