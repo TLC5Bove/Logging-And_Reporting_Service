@@ -52,7 +52,7 @@ public class OrderService {
     }
 
     public OrderStatusResponse getOrderStatus(String orderId, String exchange) {
-        WebClient webClient = WebClient.create("https://exchange.matraining.com");
+        WebClient webClient = WebClient.create("https://" + exchange + ".matraining.com");
 
         OrderStatusResponse response = webClient.get()
                 .uri("/" + exchangeAPIkey + "/order/" + orderId)
@@ -66,17 +66,6 @@ public class OrderService {
     }
 
     private void checkOrderExecutionStatus(OrderStatusResponse response, String orderId) {
-//        Order order = findById(orderId);
-//
-//        if (order == null) return;
-//
-//        if (response.getExecutions() == order.getExecutions()) return;
-//
-//        if (Objects.equals(order.getStatus(), "complete")) {
-//            messageRepo.deleteById(orderId);
-//            return;
-//        }
-
         if (response.getExecutions().isEmpty()) return;
 
         if (response.getQuantity() >= 1 && response.getQuantity() > response.getCumulatitiveQuantity()) {
