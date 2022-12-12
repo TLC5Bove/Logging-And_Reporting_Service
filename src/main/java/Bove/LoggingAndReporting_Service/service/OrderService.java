@@ -80,12 +80,10 @@ public class OrderService {
         if (response.getExecutions().isEmpty()) return;
 
         if (response.getQuantity() >= 1 && response.getQuantity() > response.getCumulatitiveQuantity()) {
-//            order.setStatus("partial");
-            return;
+            producer.publishCompletedOrdersMessage(response);
         } else {
             messageRepo.deleteById(orderId);
+            producer.publishCompletedOrdersMessage(response);
         }
-        System.out.println(response.getOrderID());
-        producer.publishCompletedOrdersMessage(response);
     }
 }
