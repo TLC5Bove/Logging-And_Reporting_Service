@@ -23,4 +23,9 @@ public class Receiver {
     public void listener(IdAndExchange message) {
         messageRepo.save(message);
     }
+
+    @RabbitListener(queues = RabbitConfig.CANCEL_FROM_OPS_QUEUE)
+    public void cancelListener(String id){
+        messageRepo.deleteById(id);
+    }
 }
